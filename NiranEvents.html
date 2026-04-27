@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Niran Events</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E2C97E;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-border: rgba(201,168,76,0.3);
+    --bg: #0F0F0F;
+    --bg2: #161616;
+    --bg3: #1E1E1E;
+    --bg4: #252525;
+    --surface: #1A1A1A;
+    --surface2: #212121;
+    --text: #F5F0E8;
+    --text2: #B0A898;
+    --text3: #6B6560;
+    --danger: #E05252;
+    --success: #52C98A;
+    --info: #5293C9;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --tab-h: 72px;
+    --header-h: 64px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100dvh;
+    overflow: hidden;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* SHELL */
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  /* SCREENS */
+  .screens {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: calc(var(--tab-h) + 12px);
+    display: none;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+  .screen.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* HEADER */
+  .header {
+    padding: 16px 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, var(--bg) 70%, transparent);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+  }
+  .header-sub {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-top: 1px;
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-border);
+    background: var(--bg3);
+    color: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .icon-btn:active { background: var(--gold-dim); }
+
+  /* PAGE TITLE */
+  .page-header {
+    padding: 20px 20px 8px;
+  }
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .page-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    height: var(--tab-h);
+    display: flex;
+    align-items: center;
+    background: var(--bg2);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+    z-index: 100;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+  .nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 4px;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-tab.active .nav-icon { color: var(--gold); }
+  .nav-tab.active .nav-label { color: var(--gold); }
+  .nav-tab:active { background: var(--gold-dim); }
+  .nav-icon { font-size: 20px; color: var(--text3); transition: color 0.2s; }
+  .nav-label { font-size: 9px; letter-spacing: 0.06em; color: var(--text3); transition: color 0.2s; text-transform: uppercase; }
+  .nav-badge {
+    position: absolute;
+    top: 6px; right: 20%;
+    background: var(--danger);
+    color: #fff;
+    font-size: 8px;
+    font-weight: 600;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 16px;
+    margin: 0 20px 12px;
+  }
+  .card-gold {
+    background: linear-gradient(135deg, #1C1A12, #1E1C10);
+    border-color: var(--gold-border);
+  }
+  .card-sm { padding: 12px; margin: 0 0 10px; }
+
+  /* STAT GRID */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 20px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.05);
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0.4;
+  }
+  .stat-card.accent::before { opacity: 1; }
+  .stat-val {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-val .unit { font-size: 14px; color: var(--gold); }
+  .stat-label { font-size: 10px; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .stat-change { font-size: 10px; color: var(--success); margin-top: 6px; }
+  .stat-change.down { color: var(--danger); }
+
+  /* SECTION LABEL */
+  .section-label {
+    padding: 0 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-weight: 500;
+  }
+  .section-action {
+    font-size: 11px;
+    color: var(--gold);
+    cursor: pointer;
+  }
+
+  /* EVENT ITEM */
+  .event-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .event-item:active { border-color: var(--gold-border); }
+  .event-date-box {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    min-width: 44px;
+    flex-shrink: 0;
+  }
+  .event-day {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .event-mon { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; }
+  .event-info { flex: 1; min-width: 0; }
+  .event-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .event-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .event-status {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .status-planning { background: rgba(82,147,201,0.15); color: var(--info); border: 1px solid rgba(82,147,201,0.3); }
+  .status-ongoing { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); }
+  .status-completed { background: rgba(82,201,138,0.15); color: var(--success); border: 1px solid rgba(82,201,138,0.3); }
+  .status-pending { background: rgba(224,82,82,0.15); color: var(--danger); border: 1px solid rgba(224,82,82,0.3); }
+
+  /* PILL TABS */
+  .pill-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pill-tabs::-webkit-scrollbar { display: none; }
+  .pill {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text3);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .pill.active {
+    background: var(--gold);
+    color: #0F0F0F;
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* NOTIFICATION ITEM */
+  .notif-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
+  }
+  .notif-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .notif-text { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .notif-time { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { margin-top: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-bottom: 5px; }
+  .progress-bar { height: 4px; background: var(--bg4); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.6s ease; }
+
+  /* CLIENT CARD */
+  .client-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold);
+    flex-shrink: 0;
+    border: 1px solid var(--gold-border);
+  }
+  .client-name { font-size: 14px; font-weight: 500; }
+  .client-detail { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .client-actions { margin-left: auto; display: flex; gap: 8px; }
+  .mini-btn {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.07);
+    color: var(--text3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mini-btn:active { background: var(--gold-dim); color: var(--gold); }
+
+  /* TASK ITEM */
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
+  }
+  .task-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 1.5px solid var(--gold-border);
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .task-check.done { background: var(--gold); border-color: var(--gold); }
+  .task-check.done::after { content: '✓'; font-size: 11px; color: #0F0F0F; font-weight: 700; }
+  .task-content { flex: 1; }
+  .task-name { font-size: 13px; color: var(--text); }
+  .task-name.done { text-decoration: line-through; color: var(--text3); }
+  .task-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .priority-tag {
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+  }
+  .p-high { background: rgba(224,82,82,0.15); color: var(--danger); }
+  .p-med { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .p-low { background: rgba(82,201,138,0.15); color: var(--success); }
+
+  /* VENDOR CARD */
+  .vendor-card {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .vendor-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .stars { color: var(--gold); font-size: 11px; margin-top: 3px; }
+
+  /* BUDGET */
+  .budget-bar-wrap { margin: 12px 0; }
+  .budget-sections { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; }
+  .budget-seg { height: 100%; border-radius: 2px; }
+
+  /* GALLERY */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 20px;
+  }
+  .gallery-item {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+  }
+  .gallery-emoji { font-size: 36px; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .gallery-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+    padding: 8px 10px 10px;
+  }
+  .gallery-label { font-size: 11px; color: #fff; font-weight: 500; }
+
+  /* ANALYTICS */
+  .chart-bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin: 12px 0; }
+  .chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--gold-dim); border: 1px solid var(--gold-border); transition: height 0.6s ease; position: relative; }
+  .chart-bar.highlight { background: linear-gradient(180deg, var(--gold-light), var(--gold)); border: none; }
+  .chart-bar-label { font-size: 9px; color: var(--text3); text-transform: uppercase; }
+
+  /* BOOKING CALENDAR */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+  .cal-day-label { text-align: center; font-size: 9px; color: var(--text3); text-transform: uppercase; padding-bottom: 6px; }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    border-radius: 8px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .cal-day.today { background: var(--gold); color: #0F0F0F; font-weight: 700; }
+  .cal-day.has-event::after {
+    content: '';
+    width: 4px; height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+  }
+  .cal-day.booked { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold-border); }
+  .cal-day:active { background: var(--bg3); }
+  .cal-day.empty { cursor: default; }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: calc(var(--tab-h) + 16px);
+    right: calc(50% - 215px + 16px);
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #0F0F0F;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+    z-index: 50;
+  }
+  .fab:active { transform: scale(0.92); box-shadow: 0 2px 10px rgba(201,168,76,0.2); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    width: 100%;
+    max-width: 430px;
+    background: var(--bg2);
+    border-radius: 24px 24px 0 0;
+    padding: 20px;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.34,1.1,0.64,1);
+    max-height: 85dvh;
+    overflow-y: auto;
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--bg4); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  /* FORM */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; display: block; }
+  .form-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--gold-border); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #0F0F0F;
+    border: none;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    letter-spacing: 0.04em;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:active { opacity: 0.85; }
+  .btn-outline {
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-outline:active { background: var(--gold-dim); }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 12px 0; }
+
+  /* AI CARD */
+  .ai-card {
+    background: linear-gradient(135deg, #13110C, #1A1700);
+    border: 1px solid var(--gold-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin: 0 20px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-card::before {
+    content: '✦';
+    position: absolute;
+    right: 16px; top: 12px;
+    font-size: 20px;
+    color: var(--gold);
+    opacity: 0.4;
+  }
+  .ai-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  .ai-suggestion { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* INVOICE */
+  .invoice-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 13px; color: var(--text2); }
+  .invoice-total { display: flex; justify-content: space-between; padding: 12px 0 0; font-size: 16px; font-weight: 600; color: var(--text); }
+  .invoice-amount { color: var(--gold); }
+
+  /* TEAM MEMBER */
+  .team-member {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-bottom: 8px;
+  }
+  .role-badge {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .role-admin { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold-border); }
+  .role-manager { background: rgba(82,147,201,0.15); color: var(--info); border: 1px solid rgba(82,147,201,0.3); }
+  .role-worker { background: rgba(255,255,255,0.06); color: var(--text3); border: 1px solid rgba(255,255,255,0.08); }
+
+  /* AI CHAT */
+  .chat-wrap { padding: 0 20px; }
+  .chat-bubble {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .chat-bubble.ai {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--text2);
+    border-radius: 4px 14px 14px 14px;
+  }
+  .chat-bubble.user {
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+    color: var(--text);
+    border-radius: 14px 4px 14px 14px;
+    margin-left: auto;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 8px;
+  }
+  .chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+  }
+  .chat-send-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: #0F0F0F;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* TIMELINE */
+  .timeline { padding: 0 20px; }
+  .tl-item { display: flex; gap: 14px; padding-bottom: 20px; position: relative; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-left { display: flex; flex-direction: column; align-items: center; width: 20px; flex-shrink: 0; }
+  .tl-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--bg);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .tl-dot.done { background: var(--gold); }
+  .tl-line { flex: 1; width: 1px; background: rgba(201,168,76,0.2); margin-top: 4px; }
+  .tl-content { padding-top: 0; }
+  .tl-title { font-size: 13px; font-weight: 500; color: var(--text); }
+  .tl-detail { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* SPLASH / LOGIN */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity 0.4s ease;
+  }
+  #splash.hide { opacity: 0; pointer-events: none; }
+  .splash-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    animation: fadeUp 0.6s ease both;
+  }
+  .splash-tagline {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-top: 8px;
+    animation: fadeUp 0.6s 0.15s ease both;
+  }
+  .splash-line {
+    width: 40px; height: 1px;
+    background: var(--gold);
+    margin: 20px 0;
+    animation: scaleX 0.5s 0.3s ease both;
+    transform-origin: left;
+  }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes scaleX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* MISC */
+  .gold-text { color: var(--gold); }
+  .bold { font-weight: 600; }
+  .mt8 { margin-top: 8px; }
+  .mt12 { margin-top: 12px; }
+  .flex-row { display: flex; align-items: center; gap: 8px; }
+  .spacer { flex: 1; }
+  .text-right { text-align: right; }
+  .row-between { display: flex; align-items: center; justify-content: space-between; }
+
+  /* QR */
+  .qr-box {
+    width: 140px; height: 140px;
+    background: #fff;
+    border-radius: 12px;
+    margin: 16px auto;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 72px;
+    padding: 8px;
+  }
+  .qr-inner { font-size: 64px; }
+
+  /* SCROLL CONTENT PADDING */
+  .content { padding-bottom: 8px; }
+
+  /* WHATSAPP */
+  .wa-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #1B3A2A;
+    border: 1px solid #2D6A4F;
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #52C98A;
+    font-weight: 500;
+    transition: background 0.2s;
+  }
+  .wa-btn:active { background: #1F4A33; }
+
+  /* SEARCH */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 0 20px 16px;
+  }
+  .search-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .search-bar input::placeholder { color: var(--text3); }
+
+  /* SWIPE HINT */
+  .swipe-hint { text-align: center; font-size: 10px; color: var(--text3); padding: 8px 0; letter-spacing: 0.08em; }
+
+  /* SELECT */
+  select.form-input { -webkit-appearance: none; }
+
+  /* COLOR DOT */
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">Niran</div>
+  <div class="splash-tagline">Events & Experiences</div>
+  <div class="splash-line"></div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+  <div class="screens">
+
+    <!-- ═══════════════ DASHBOARD ═══════════════ -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="header">
+        <div>
+          <div class="header-logo">Niran</div>
+          <div class="header-sub">Events</div>
+        </div>
+        <div class="header-actions">
+          <div class="icon-btn" onclick="openModal('notifModal')">🔔</div>
+          <div class="icon-btn" onclick="openModal('profileModal')">👤</div>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- GREETING -->
+        <div style="padding: 0 20px 16px;">
+          <div style="font-size:12px; color:var(--text3);">Good morning,</div>
+          <div style="font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:600; margin-top:2px;">Kriz <span style="color:var(--gold);">✦</span></div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stat-grid">
+          <div class="stat-card accent">
+            <div class="stat-val">12 <span class="unit">events</span></div>
+            <div class="stat-label">This Month</div>
+            <div class="stat-change">↑ 3 from last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val"><span class="unit">₹</span>4.2L</div>
+            <div class="stat-label">Revenue MTD</div>
+            <div class="stat-change">↑ 18% growth</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">7</div>
+            <div class="stat-label">Pending Leads</div>
+            <div class="stat-change down">2 follow-ups due</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">94<span class="unit">%</span></div>
+            <div class="stat-label">Client Satisfaction</div>
+            <div class="stat-change">↑ 2pts this quarter</div>
+          </div>
+        </div>
+
+        <!-- AI SUGGESTION -->
+        <div class="ai-card">
+          <div class="ai-label">✦ AI Insight</div>
+          <div class="ai-suggestion">Wedding season peaks in February. Consider offering an early-bird discount for December bookings to lock in 3–4 additional clients.</div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="section-label"><div class="section-title">Quick Actions</div></div>
+        <div style="display:flex; gap:10px; padding:0 20px; margin-bottom:16px; overflow-x:auto; scrollbar-width:none;">
+          <div style="flex-shrink:0; background:var(--gold-dim); border:1px solid var(--gold-border); border-radius:12px; padding:12px 14px; text-align:center; cursor:pointer; min-width:72px;" onclick="switchTab('events')">
+            <div style="font-size:24px;">🗓️</div>
+            <div style="font-size:10px; color:var(--gold); margin-top:4px; white-space:nowrap;">New Event</div>
+          </div>
+          <div style="flex-shrink:0; background:var(--surface); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px; text-align:center; cursor:pointer; min-width:72px;" onclick="switchTab('clients')">
+            <div style="font-size:24px;">👥</div>
+            <div style="font-size:10px; color:var(--text3); margin-top:4px; white-space:nowrap;">Add Client</div>
+          </div>
+          <div style="flex-shrink:0; background:var(--surface); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px; text-align:center; cursor:pointer; min-width:72px;" onclick="switchTab('budget')">
+            <div style="font-size:24px;">💰</div>
+            <div style="font-size:10px; color:var(--text3); margin-top:4px; white-space:nowrap;">Invoice</div>
+          </div>
+          <div style="flex-shrink:0; background:var(--surface); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px; text-align:center; cursor:pointer; min-width:72px;" onclick="openModal('qrModal')">
+            <div style="font-size:24px;">📱</div>
+            <div style="font-size:10px; color:var(--text3); margin-top:4px; white-space:nowrap;">QR Check-in</div>
+          </div>
+          <div style="flex-shrink:0; background:var(--surface); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:12px 14px; text-align:center; cursor:pointer; min-width:72px;" onclick="switchTab('tasks')">
+            <div style="font-size:24px;">✅</div>
+            <div style="font-size:10px; color:var(--text3); margin-top:4px; white-space:nowrap;">Tasks</div>
+          </div>
+        </div>
+
+        <!-- UPCOMING EVENTS -->
+        <div class="section-label">
+          <div class="section-title">Upcoming Events</div>
+          <div class="section-action" onclick="switchTab('events')">View All</div>
+        </div>
+        <div style="padding:0 20px;">
+          <div class="event-item" onclick="openModal('eventDetailModal')">
+            <div class="event-date-box">
+              <div class="event-day">28</div>
+              <div class="event-mon">Apr</div>
+            </div>
+            <div class="event-info">
+              <div class="event-name">Menon Wedding Reception</div>
+              <div class="event-meta">📍 Le Méridien, Trivandrum · 4 PM</div>
+            </div>
+            <div class="event-status status-planning">Planning</div>
+          </div>
+          <div class="event-item">
+            <div class="event-date-box">
+              <div class="event-day">02</div>
+              <div class="event-mon">May</div>
+            </div>
+            <div class="event-info">
+              <div class="event-name">TCS Annual Corporate Meet</div>
+              <div class="event-meta">📍 Technopark, Trivandrum · 10 AM</div>
+            </div>
+            <div class="event-status status-ongoing">Active</div>
+          </div>
+          <div class="event-item">
+            <div class="event-date-box">
+              <div class="event-day">08</div>
+              <div class="event-mon">May</div>
+            </div>
+            <div class="event-info">
+              <div class="event-name">Arya's Birthday Gala</div>
+              <div class="event-meta">📍 Residency Tower · 6 PM</div>
+            </div>
+            <div class="event-status status-planning">Planning</div>
+          </div>
+        </div>
+
+        <!-- NOTIFICATIONS PREVIEW -->
+        <div class="section-label mt12">
+          <div class="section-title">Recent Alerts</div>
+          <div class="section-action" onclick="openModal('notifModal')">See All</div>
+        </div>
+        <div style="padding:0 20px;">
+          <div class="notif-item">
+            <div class="notif-dot" style="background:var(--danger);"></div>
+            <div>
+              <div class="notif-text">Payment of ₹45,000 overdue — Priya Nair (Wedding)</div>
+              <div class="notif-time">2 hours ago</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot" style="background:var(--gold);"></div>
+            <div>
+              <div class="notif-text">New booking request from Rajan Thomas for June 15</div>
+              <div class="notif-time">5 hours ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ EVENTS ═══════════════ -->
+    <div class="screen" id="screen-events">
+      <div class="page-header">
+        <div class="page-title">Events</div>
+        <div class="page-sub">Manage all your event operations</div>
+      </div>
+
+      <div class="search-bar">
+        <span style="color:var(--text3);">🔍</span>
+        <input type="text" placeholder="Search events…">
+      </div>
+
+      <div class="pill-tabs">
+        <div class="pill active">All</div>
+        <div class="pill">Weddings</div>
+        <div class="pill">Corporate</div>
+        <div class="pill">Parties</div>
+        <div class="pill">Social</div>
+      </div>
+
+      <div style="padding:0 20px;">
+        <div class="event-item" onclick="openModal('eventDetailModal')">
+          <div class="event-date-box">
+            <div class="event-day">28</div>
+            <div class="event-mon">Apr</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">Menon Wedding Reception</div>
+            <div class="event-meta">💍 Wedding · 250 guests</div>
+          </div>
+          <div class="event-status status-planning">Planning</div>
+        </div>
+
+        <div class="event-item" onclick="openModal('eventDetailModal')">
+          <div class="event-date-box">
+            <div class="event-day">02</div>
+            <div class="event-mon">May</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">TCS Annual Corporate Meet</div>
+            <div class="event-meta">🏢 Corporate · 120 guests</div>
+          </div>
+          <div class="event-status status-ongoing">Active</div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-date-box">
+            <div class="event-day">08</div>
+            <div class="event-mon">May</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">Arya's Birthday Gala</div>
+            <div class="event-meta">🎂 Birthday · 80 guests</div>
+          </div>
+          <div class="event-status status-planning">Planning</div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-date-box">
+            <div class="event-day">15</div>
+            <div class="event-mon">Mar</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">Varma Anniversary Dinner</div>
+            <div class="event-meta">💛 Anniversary · 40 guests</div>
+          </div>
+          <div class="event-status status-completed">Done</div>
+        </div>
+
+        <div class="event-item">
+          <div class="event-date-box">
+            <div class="event-day">20</div>
+            <div class="event-mon">Mar</div>
+          </div>
+          <div class="event-info">
+            <div class="event-name">KSEB Product Launch</div>
+            <div class="event-meta">🏢 Corporate · 300 guests</div>
+          </div>
+          <div class="event-status status-completed">Done</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CLIENTS / CRM ═══════════════ -->
+    <div class="screen" id="screen-clients">
+      <div class="page-header">
+        <div class="page-title">Clients</div>
+        <div class="page-sub">CRM & relationship management</div>
+      </div>
+
+      <div class="search-bar">
+        <span style="color:var(--text3);">🔍</span>
+        <input type="text" placeholder="Search clients…">
+      </div>
+
+      <div class="section-label">
+        <div class="section-title">Active Clients (14)</div>
+        <div class="section-action" onclick="openModal('addClientModal')">+ Add</div>
+      </div>
+
+      <div style="padding:0 20px;">
+        <div class="client-card">
+          <div class="avatar" style="background:rgba(201,168,76,0.08);">S</div>
+          <div>
+            <div class="client-name">Sreelakshmi Menon</div>
+            <div class="client-detail">Wedding · Apr 28 · ₹2.8L budget</div>
+          </div>
+          <div class="client-actions">
+            <div class="mini-btn" onclick="openModal('chatModal')">💬</div>
+            <div class="mini-btn">📞</div>
+          </div>
+        </div>
+
+        <div class="client-card">
+          <div class="avatar" style="background:rgba(82,147,201,0.08);">R</div>
+          <div>
+            <div class="client-name">Rajan Thomas</div>
+            <div class="client-detail">Corporate · May 2 · ₹1.5L budget</div>
+          </div>
+          <div class="client-actions">
+            <div class="mini-btn" onclick="openModal('chatModal')">💬</div>
+            <div class="mini-btn">📞</div>
+          </div>
+        </div>
+
+        <div class="client-card">
+          <div class="avatar" style="background:rgba(82,201,138,0.08);">A</div>
+          <div>
+            <div class="client-name">Arya Krishnan</div>
+            <div class="client-detail">Birthday · May 8 · ₹80K budget</div>
+          </div>
+          <div class="client-actions">
+            <div class="mini-btn" onclick="openModal('chatModal')">💬</div>
+            <div class="mini-btn">📞</div>
+          </div>
+        </div>
+
+        <div class="client-card">
+          <div class="avatar" style="background:rgba(201,168,76,0.08);">P</div>
+          <div>
+            <div class="client-name">Priya Nair</div>
+            <div class="client-detail">Wedding · Jun 15 · ₹3.2L budget</div>
+          </div>
+          <div class="client-actions">
+            <div class="mini-btn" onclick="openModal('chatModal')">💬</div>
+            <div class="mini-btn">📞</div>
+          </div>
+        </div>
+
+        <div class="client-card">
+          <div class="avatar" style="background:rgba(224,82,82,0.08);">V</div>
+          <div>
+            <div class="client-name">Varma Family</div>
+            <div class="client-detail">Anniversary · Completed · ₹60K</div>
+          </div>
+          <div class="client-actions">
+            <div class="mini-btn" onclick="openModal('chatModal')">💬</div>
+            <div class="mini-btn">📞</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WA INTEGRATION -->
+      <div style="padding:0 20px; margin-top:4px;">
+        <div class="wa-btn" onclick="openModal('waModal')">
+          <span style="font-size:20px;">🟢</span>
+          <div>
+            <div style="font-size:12px; font-weight:600;">WhatsApp Quick Message</div>
+            <div style="font-size:10px; opacity:0.7;">Send updates or reminders instantly</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TASKS & TEAM ═══════════════ -->
+    <div class="screen" id="screen-tasks">
+      <div class="page-header">
+        <div class="page-title">Tasks & Team</div>
+        <div class="page-sub">Operations & workforce management</div>
+      </div>
+
+      <div class="pill-tabs">
+        <div class="pill active">My Tasks</div>
+        <div class="pill">Team Tasks</div>
+        <div class="pill">Team Members</div>
+      </div>
+
+      <div class="section-label">
+        <div class="section-title">Today's Priority</div>
+        <div class="section-action" onclick="openModal('addTaskModal')">+ Task</div>
+      </div>
+
+      <div style="padding:0 20px;">
+        <div class="task-item">
+          <div class="task-check done" onclick="toggleTask(this)"></div>
+          <div class="task-content">
+            <div class="task-name done">Confirm florist for Menon Wedding</div>
+            <div class="task-meta">📅 Apr 27 · Assigned to Kriz</div>
+          </div>
+          <div class="priority-tag p-high">High</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div class="task-content">
+            <div class="task-name">Finalize catering menu for TCS event</div>
+            <div class="task-meta">📅 Apr 28 · Assigned to Meera</div>
+          </div>
+          <div class="priority-tag p-high">High</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div class="task-content">
+            <div class="task-name">Send draft invoice to Arya Krishnan</div>
+            <div class="task-meta">📅 Apr 29 · Assigned to Kriz</div>
+          </div>
+          <div class="priority-tag p-med">Med</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div class="task-content">
+            <div class="task-name">Update portfolio with March event photos</div>
+            <div class="task-meta">📅 Apr 30 · Assigned to Rahul</div>
+          </div>
+          <div class="priority-tag p-low">Low</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-check" onclick="toggleTask(this)"></div>
+          <div class="task-content">
+            <div class="task-name">Follow up on Priya Nair overdue payment</div>
+            <div class="task-meta">📅 Apr 27 · Assigned to Kriz</div>
+          </div>
+          <div class="priority-tag p-high">High</div>
+        </div>
+      </div>
+
+      <div class="section-label mt12">
+        <div class="section-title">Team Members</div>
+        <div class="section-action">Manage</div>
+      </div>
+
+      <div style="padding:0 20px;">
+        <div class="team-member">
+          <div class="avatar" style="background:rgba(201,168,76,0.08); width:38px;height:38px;font-size:16px;">K</div>
+          <div>
+            <div style="font-size:13px; font-weight:500;">Kriz (You)</div>
+            <div style="font-size:11px; color:var(--text3);">5 tasks · 2 events</div>
+          </div>
+          <div class="role-badge role-admin">Admin</div>
+        </div>
+        <div class="team-member">
+          <div class="avatar" style="background:rgba(82,147,201,0.08); width:38px;height:38px;font-size:16px;">M</div>
+          <div>
+            <div style="font-size:13px; font-weight:500;">Meera R.</div>
+            <div style="font-size:11px; color:var(--text3);">3 tasks · 1 event</div>
+          </div>
+          <div class="role-badge role-manager">Manager</div>
+        </div>
+        <div class="team-member">
+          <div class="avatar" style="background:rgba(82,201,138,0.08); width:38px;height:38px;font-size:16px;">R</div>
+          <div>
+            <div style="font-size:13px; font-weight:500;">Rahul S.</div>
+            <div style="font-size:11px; color:var(--text3);">2 tasks · 2 events</div>
+          </div>
+          <div class="role-badge role-worker">Staff</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BUDGET / FINANCE ═══════════════ -->
+    <div class="screen" id="screen-budget">
+      <div class="page-header">
+        <div class="page-title">Finance</div>
+        <div class="page-sub">Budget, expenses & invoices</div>
+      </div>
+
+      <!-- REVENUE CHART -->
+      <div class="card card-gold" style="margin:0 20px 16px;">
+        <div class="row-between">
+          <div>
+            <div style="font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text3);">Total Revenue</div>
+            <div style="font-family:'Cormorant Garamond',serif; font-size:32px; font-weight:700; color:var(--gold); margin-top:2px;">₹12.4L</div>
+            <div style="font-size:11px; color:var(--success); margin-top:2px;">↑ 24% vs last quarter</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em;">Pending</div>
+            <div style="font-size:20px; font-weight:700; color:var(--danger); margin-top:2px;">₹78K</div>
+          </div>
+        </div>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar-col"><div class="chart-bar" style="height:45%;"></div><div class="chart-bar-label">Jan</div></div>
+          <div class="chart-bar-col"><div class="chart-bar" style="height:60%;"></div><div class="chart-bar-label">Feb</div></div>
+          <div class="chart-bar-col"><div class="chart-bar" style="height:40%;"></div><div class="chart-bar-label">Mar</div></div>
+          <div class="chart-bar-col"><div class="chart-bar highlight" style="height:80%;"></div><div class="chart-bar-label" style="color:var(--gold);">Apr</div></div>
+          <div class="chart-bar-col"><div class="chart-bar" style="height:30%;"></div><div class="chart-bar-label">May</div></div>
+          <div class="chart-bar-col"><div class="chart-bar" style="height:20%;"></div><div class="chart-bar-label">Jun</div></div>
+        </div>
+      </div>
+
+      <!-- EVENT BUDGET -->
+      <div class="section-label">
+        <div class="section-title">Event Budgets</div>
+        <div class="section-action" onclick="openModal('invoiceModal')">+ Invoice</div>
+      </div>
+
+      <div style="padding:0 20px;">
+        <div class="card" style="margin:0 0 10px;">
+          <div class="row-between">
+            <div>
+              <div style="font-size:13px; font-weight:500;">Menon Wedding</div>
+              <div style="font-size:11px; color:var(--text3); margin-top:2px;">Budget: ₹2.8L</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px; color:var(--success);">₹1.6L spent</div>
+              <div style="font-size:10px; color:var(--text3);">57% used</div>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" style="width:57%;"></div></div>
+          </div>
+          <!-- Budget breakdown -->
+          <div class="budget-sections" style="margin-top:8px;">
+            <div class="budget-seg" style="width:35%; background:#C9A84C;"></div>
+            <div class="budget-seg" style="width:25%; background:#5293C9;"></div>
+            <div class="budget-seg" style="width:20%; background:#52C98A;"></div>
+            <div class="budget-seg" style="flex:1; background:var(--bg4);"></div>
+          </div>
+          <div style="display:flex; gap:12px; margin-top:6px;">
+            <div class="flex-row"><div class="dot" style="background:#C9A84C;"></div><div style="font-size:9px;color:var(--text3);">Décor 35%</div></div>
+            <div class="flex-row"><div class="dot" style="background:#5293C9;"></div><div style="font-size:9px;color:var(--text3);">Catering 25%</div></div>
+            <div class="flex-row"><div class="dot" style="background:#52C98A;"></div><div style="font-size:9px;color:var(--text3);">Stage 20%</div></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin:0 0 10px;">
+          <div class="row-between">
+            <div>
+              <div style="font-size:13px; font-weight:500;">TCS Corporate Meet</div>
+              <div style="font-size:11px; color:var(--text3); margin-top:2px;">Budget: ₹1.5L</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px; color:var(--gold);">₹85K spent</div>
+              <div style="font-size:10px; color:var(--text3);">57% used</div>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" style="width:57%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT INVOICES -->
+      <div class="section-label mt12">
+        <div class="section-title">Recent Invoices</div>
+      </div>
+
+      <div style="padding:0 20px;">
+        <div class="card" style="margin:0 0 10px; cursor:pointer;" onclick="openModal('invoiceModal')">
+          <div class="row-between">
+            <div>
+              <div style="font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em;">INV-2024-038</div>
+              <div style="font-size:14px; font-weight:500; margin-top:3px;">Sreelakshmi Menon</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:16px; font-weight:700; color:var(--gold);">₹1,40,000</div>
+              <div class="event-status status-pending" style="margin-top:4px; display:inline-block;">Pending</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin:0 0 10px;">
+          <div class="row-between">
+            <div>
+              <div style="font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em;">INV-2024-037</div>
+              <div style="font-size:14px; font-weight:500; margin-top:3px;">Varma Family</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:16px; font-weight:700; color:var(--text);">₹60,000</div>
+              <div class="event-status status-completed" style="margin-top:4px; display:inline-block;">Paid</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ MORE (VENDORS / GALLERY / AI / SETTINGS) ═══════════════ -->
+    <div class="screen" id="screen-more">
+      <div class="page-header">
+        <div class="page-title">Explore</div>
+        <div class="page-sub">Vendors, gallery, AI assistant & more</div>
+      </div>
+
+      <div class="pill-tabs">
+        <div class="pill active" onclick="showMoreTab(this,'vendors')">Vendors</div>
+        <div class="pill" onclick="showMoreTab(this,'gallery')">Gallery</div>
+        <div class="pill" onclick="showMoreTab(this,'booking')">Booking</div>
+        <div class="pill" onclick="showMoreTab(this,'ai')">AI Assist</div>
+        <div class="pill" onclick="showMoreTab(this,'analytics')">Analytics</div>
+      </div>
+
+      <!-- VENDORS -->
+      <div id="more-vendors">
+        <div class="section-label">
+          <div class="section-title">Vendor Network (18)</div>
+          <div class="section-action">+ Add</div>
+        </div>
+        <div style="padding:0 20px;">
+          <div class="vendor-card">
+            <div class="vendor-icon">🌸</div>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:500;">Green Petal Florals</div>
+              <div style="font-size:11px; color:var(--text3);">Décor & Florals · Trivandrum</div>
+              <div class="stars">★★★★★ <span style="color:var(--text3);">4.9</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text3);">15 events</div>
+              <div class="event-status status-completed" style="margin-top:4px; display:inline-block;">Active</div>
+            </div>
+          </div>
+          <div class="vendor-card">
+            <div class="vendor-icon">🍽️</div>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:500;">Royal Feast Catering</div>
+              <div style="font-size:11px; color:var(--text3);">Catering · Kochi</div>
+              <div class="stars">★★★★☆ <span style="color:var(--text3);">4.6</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text3);">8 events</div>
+              <div class="event-status status-completed" style="margin-top:4px; display:inline-block;">Active</div>
+            </div>
+          </div>
+          <div class="vendor-card">
+            <div class="vendor-icon">📸</div>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:500;">Lens & Light Studio</div>
+              <div style="font-size:11px; color:var(--text3);">Photography · Trivandrum</div>
+              <div class="stars">★★★★★ <span style="color:var(--text3);">5.0</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text3);">22 events</div>
+              <div class="event-status status-completed" style="margin-top:4px; display:inline-block;">Active</div>
+            </div>
+          </div>
+          <div class="vendor-card">
+            <div class="vendor-icon">🎵</div>
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:500;">SoundWave Events</div>
+              <div style="font-size:11px; color:var(--text3);">Sound & AV · Trivandrum</div>
+              <div class="stars">★★★★☆ <span style="color:var(--text3);">4.5</span></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px; color:var(--text3);">10 events</div>
+              <div class="event-status status-planning" style="margin-top:4px; display:inline-block;">Booked</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GALLERY -->
+      <div id="more-gallery" style="display:none;">
+        <div class="section-label">
+          <div class="section-title">Portfolio</div>
+          <div class="section-action">+ Upload</div>
+        </div>
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <div class="gallery-emoji">💍</div>
+            <div class="gallery-overlay"><div class="gallery-label">Menon Wedding</div></div>
+          </div>
+          <div class="gallery-item">
+            <div class="gallery-emoji">🎂</div>
+            <div class="gallery-overlay"><div class="gallery-label">Birthday Gala</div></div>
+          </div>
+          <div class="gallery-item">
+            <div class="gallery-emoji">🏢</div>
+            <div class="gallery-overlay"><div class="gallery-label">TCS Corporate</div></div>
+          </div>
+          <div class="gallery-item">
+            <div class="gallery-emoji">🌸</div>
+            <div class="gallery-overlay"><div class="gallery-label">Floral Setup</div></div>
+          </div>
+          <div class="gallery-item">
+            <div class="gallery-emoji">🎊</div>
+            <div class="gallery-overlay"><div class="gallery-label">New Year Eve</div></div>
+          </div>
+          <div class="gallery-item">
+            <div class="gallery-emoji">🕌</div>
+            <div class="gallery-overlay"><div class="gallery-label">Grand Stage</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOKING CALENDAR -->
+      <div id="more-booking" style="display:none;">
+        <div class="section-label">
+          <div class="section-title">April 2025</div>
+          <div class="section-action">May →</div>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-label">S</div><div class="cal-day-label">M</div><div class="cal-day-label">T</div><div class="cal-day-label">W</div><div class="cal-day-label">T</div><div class="cal-day-label">F</div><div class="cal-day-label">S</div>
+          <div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div>
+          <div class="cal-day">6</div><div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+          <div class="cal-day">13</div><div class="cal-day">14</div><div class="cal-day has-event booked">15</div><div class="cal-day">16</div><div class="cal-day">17</div><div class="cal-day">18</div><div class="cal-day">19</div>
+          <div class="cal-day">20</div><div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div><div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+          <div class="cal-day today">27</div><div class="cal-day has-event booked">28</div><div class="cal-day">29</div><div class="cal-day">30</div><div class="cal-day empty"></div><div class="cal-day empty"></div><div class="cal-day empty"></div>
+        </div>
+        <div class="section-label">
+          <div class="section-title">Booking Requests</div>
+          <div class="section-action">View All</div>
+        </div>
+        <div style="padding:0 20px;">
+          <div class="card" style="margin:0 0 10px;">
+            <div class="row-between">
+              <div>
+                <div style="font-size:13px; font-weight:500;">Rajan Thomas</div>
+                <div style="font-size:11px; color:var(--text3); margin-top:2px;">Corporate Event · Jun 15 · 150 guests</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-outline" style="padding:6px 12px; font-size:11px; color:var(--success); border-color:rgba(82,201,138,0.3);">Accept</button>
+                <button class="btn-outline" style="padding:6px 12px; font-size:11px; color:var(--danger); border-color:rgba(224,82,82,0.3);">Decline</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin:0 0 10px;">
+            <div class="row-between">
+              <div>
+                <div style="font-size:13px; font-weight:500;">Seema Pillai</div>
+                <div style="font-size:11px; color:var(--text3); margin-top:2px;">Wedding · Jul 20 · 300 guests</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-outline" style="padding:6px 12px; font-size:11px; color:var(--success); border-color:rgba(82,201,138,0.3);">Accept</button>
+                <button class="btn-outline" style="padding:6px 12px; font-size:11px; color:var(--danger); border-color:rgba(224,82,82,0.3);">Decline</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI ASSISTANT -->
+      <div id="more-ai" style="display:none;">
+        <div style="padding:0 20px 12px;">
+          <div class="ai-card" style="margin:0 0 12px;">
+            <div class="ai-label">✦ Niran AI — Event Planning Assistant</div>
+            <div class="ai-suggestion">Powered by Claude. Ask me for theme ideas, budget breakdowns, vendor suggestions, or guest management tips.</div>
+          </div>
+        </div>
+        <div class="chat-wrap">
+          <div class="chat-bubble ai">Hello! I'm your Niran Events AI assistant. How can I help you plan a perfect event today?</div>
+          <div class="chat-bubble user">Give me theme ideas for a 250-person wedding in April.</div>
+          <div class="chat-bubble ai" id="aiResponse">Let me think of some beautiful themes for an April wedding in Kerala...<br><br>
+          🌸 <strong>Garden Bloom</strong> — Lush florals, ivory draping, gold accents. Perfect for outdoor venues.<br><br>
+          🕌 <strong>Royal Mughal</strong> — Arch frames, deep jewel tones, lanterns and ornate centerpieces.<br><br>
+          🌊 <strong>Coastal Elegance</strong> — Soft blues, driftwood elements, tropical greens with white linen.</div>
+        </div>
+        <div class="chat-input-row">
+          <input class="chat-input" type="text" placeholder="Ask about themes, budgets, vendors…" id="aiInput">
+          <button class="chat-send-btn" onclick="sendAIMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="more-analytics" style="display:none;">
+        <div class="section-label">
+          <div class="section-title">Performance Insights</div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card accent">
+            <div class="stat-val">48</div>
+            <div class="stat-label">Events YTD</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val"><span class="unit">₹</span>28L</div>
+            <div class="stat-label">Revenue YTD</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">94<span class="unit">%</span></div>
+            <div class="stat-label">Retention Rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">4.8<span class="unit">★</span></div>
+            <div class="stat-label">Avg Rating</div>
+          </div>
+        </div>
+
+        <div class="section-label">
+          <div class="section-title">Event Type Breakdown</div>
+        </div>
+        <div style="padding:0 20px;">
+          <div style="margin-bottom:12px;">
+            <div class="progress-label"><span>Weddings</span><span class="gold-text">45%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:45%;"></div></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div class="progress-label"><span>Corporate</span><span class="gold-text">30%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:30%;"></div></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div class="progress-label"><span>Parties & Social</span><span class="gold-text">20%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:20%;"></div></div>
+          </div>
+          <div>
+            <div class="progress-label"><span>Other</span><span class="gold-text">5%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:5%;"></div></div>
+          </div>
+        </div>
+
+        <div class="section-label mt12">
+          <div class="section-title">Top Performing Months</div>
+        </div>
+        <div style="padding:0 20px;">
+          <div class="card" style="margin:0 0 8px;">
+            <div class="row-between">
+              <div style="font-size:13px;">February 2025</div>
+              <div style="font-size:14px; font-weight:700; color:var(--gold);">₹5.2L</div>
+            </div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:92%;"></div></div></div>
+          </div>
+          <div class="card" style="margin:0 0 8px;">
+            <div class="row-between">
+              <div style="font-size:13px;">April 2025</div>
+              <div style="font-size:14px; font-weight:700; color:var(--gold);">₹4.2L</div>
+            </div>
+            <div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:76%;"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-tab active" onclick="switchTab('dashboard')" id="tab-dashboard">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </div>
+    <div class="nav-tab" onclick="switchTab('events')" id="tab-events">
+      <div class="nav-icon">📅</div>
+      <div class="nav-label">Events</div>
+    </div>
+    <div class="nav-tab" onclick="switchTab('clients')" id="tab-clients">
+      <div class="nav-icon">👥</div>
+      <div class="nav-label">Clients</div>
+      <div class="nav-badge">7</div>
+    </div>
+    <div class="nav-tab" onclick="switchTab('tasks')" id="tab-tasks">
+      <div class="nav-icon">✅</div>
+      <div class="nav-label">Tasks</div>
+    </div>
+    <div class="nav-tab" onclick="switchTab('more')" id="tab-more">
+      <div class="nav-icon">⚡</div>
+      <div class="nav-label">More</div>
+    </div>
+  </nav>
+</div><!-- /app -->
+
+<!-- FAB -->
+<button class="fab" id="fabBtn" onclick="fabAction()">+</button>
+
+<!-- ═══════ MODALS ═══════ -->
+
+<!-- EVENT DETAIL -->
+<div class="modal-overlay" id="eventDetailModal" onclick="closeModal(event,'eventDetailModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div>
+        <div class="modal-title" style="margin-bottom:4px;">Menon Wedding</div>
+        <div class="event-status status-planning">Planning</div>
+      </div>
+      <div style="margin-left:auto;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--gold);text-align:right;">28</div>
+        <div style="font-size:10px;color:var(--text3);text-align:right;">APRIL</div>
+      </div>
+    </div>
+
+    <div class="card card-sm" style="margin:0 0 12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div><div style="font-size:10px;color:var(--text3);">VENUE</div><div style="font-size:12px;margin-top:2px;">Le Méridien</div></div>
+        <div><div style="font-size:10px;color:var(--text3);">TIME</div><div style="font-size:12px;margin-top:2px;">4:00 PM</div></div>
+        <div><div style="font-size:10px;color:var(--text3);">GUESTS</div><div style="font-size:12px;margin-top:2px;">250</div></div>
+        <div><div style="font-size:10px;color:var(--text3);">BUDGET</div><div style="font-size:12px;margin-top:2px;color:var(--gold);">₹2.8L</div></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;">Event Timeline</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot done"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-title">Venue Booking Confirmed</div><div class="tl-detail">Apr 5 · Le Méridien deposit paid</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot done"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-title">Caterer Finalized</div><div class="tl-detail">Apr 10 · Royal Feast Catering</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-content"><div class="tl-title">Décor Setup</div><div class="tl-detail">Apr 27 · Green Petal Florals — pending</div></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dot"></div></div>
+          <div class="tl-content"><div class="tl-title">Event Day</div><div class="tl-detail">Apr 28 · Full day execution</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-label"><span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;">Overall Progress</span><span class="gold-text">60%</span></div>
+    <div class="progress-bar" style="height:6px;"><div class="progress-fill" style="width:60%;"></div></div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-outline" style="flex:1;" onclick="openModal('qrModal');closeModal(event,'eventDetailModal')">QR Check-in</button>
+      <button class="btn-primary" style="flex:1;margin-top:0;">Edit Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="addClientModal" onclick="closeModal(event,'addClientModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Client</div>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" type="text" placeholder="e.g. Sreelakshmi Menon">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Phone</label>
+        <input class="form-input" type="tel" placeholder="+91 98...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="email@...">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Event Type</label>
+      <select class="form-input">
+        <option>Wedding</option>
+        <option>Corporate</option>
+        <option>Birthday</option>
+        <option>Anniversary</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Event Date</label>
+        <input class="form-input" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Budget (₹)</label>
+        <input class="form-input" type="number" placeholder="100000">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Preferences</label>
+      <input class="form-input" placeholder="Any special requirements...">
+    </div>
+    <button class="btn-primary" onclick="showToast('Client added successfully!')">Save Client</button>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="addTaskModal" onclick="closeModal(event,'addTaskModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">New Task</div>
+    <div class="form-group">
+      <label class="form-label">Task Name</label>
+      <input class="form-input" type="text" placeholder="e.g. Confirm florist vendor">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Related Event</label>
+      <select class="form-input">
+        <option>Menon Wedding</option>
+        <option>TCS Corporate Meet</option>
+        <option>Arya's Birthday Gala</option>
+        <option>General</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Assign To</label>
+        <select class="form-input">
+          <option>Kriz (You)</option>
+          <option>Meera R.</option>
+          <option>Rahul S.</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select class="form-input">
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Deadline</label>
+      <input class="form-input" type="date">
+    </div>
+    <button class="btn-primary" onclick="showToast('Task created!')">Create Task</button>
+  </div>
+</div>
+
+<!-- INVOICE MODAL -->
+<div class="modal-overlay" id="invoiceModal" onclick="closeModal(event,'invoiceModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Invoice #INV-2024-038</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <div style="font-size:10px;color:var(--text3);">BILLED TO</div>
+        <div style="font-size:14px;font-weight:500;margin-top:2px;">Sreelakshmi Menon</div>
+        <div style="font-size:11px;color:var(--text3);">Wedding · Apr 28, 2025</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="event-status status-pending">Pending</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;">Due: May 1, 2025</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="invoice-row"><span>Stage & Production</span><span>₹55,000</span></div>
+    <div class="invoice-row"><span>Décor & Florals</span><span>₹48,000</span></div>
+    <div class="invoice-row"><span>Catering (250 pax)</span><span>₹25,000</span></div>
+    <div class="invoice-row"><span>Photography</span><span>₹12,000</span></div>
+    <div class="divider"></div>
+    <div class="invoice-total"><span>Total Amount</span><span class="invoice-amount">₹1,40,000</span></div>
+    <div style="margin-top:6px;display:flex;justify-content:space-between;font-size:11px;color:var(--text3);">
+      <span>Advance paid</span><span>₹70,000</span>
+    </div>
+    <div style="margin-top:4px;display:flex;justify-content:space-between;font-size:13px;color:var(--danger);font-weight:600;">
+      <span>Balance Due</span><span>₹70,000</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn-outline" style="flex:1;" onclick="showToast('Invoice shared via WhatsApp!')">Share via WA</button>
+      <button class="btn-primary" style="flex:1;margin-top:0;" onclick="showToast('Reminder sent!')">Send Reminder</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS MODAL -->
+<div class="modal-overlay" id="notifModal" onclick="closeModal(event,'notifModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Notifications</div>
+    <div class="notif-item">
+      <div class="notif-dot" style="background:var(--danger);"></div>
+      <div><div class="notif-text">Payment overdue — Priya Nair (₹45,000 pending)</div><div class="notif-time">2 hours ago · Payment</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-dot" style="background:var(--gold);"></div>
+      <div><div class="notif-text">New booking request from Rajan Thomas for June 15</div><div class="notif-time">5 hours ago · Booking</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-dot" style="background:var(--info);"></div>
+      <div><div class="notif-text">Task due tomorrow: Finalize catering menu for TCS event</div><div class="notif-time">Yesterday · Tasks</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-dot" style="background:var(--success);"></div>
+      <div><div class="notif-text">Varma Family invoice marked as paid — ₹60,000 received</div><div class="notif-time">2 days ago · Payment</div></div>
+    </div>
+    <div class="notif-item">
+      <div class="notif-dot" style="background:var(--gold);"></div>
+      <div><div class="notif-text">Menon Wedding in 1 day — review checklist</div><div class="notif-time">3 days ago · Reminder</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qrModal" onclick="closeModal(event,'qrModal')">
+  <div class="modal-sheet" style="text-align:center;">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="text-align:center;">QR Check-in</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Menon Wedding · Apr 28, 2025</div>
+    <div class="qr-box">
+      <div class="qr-inner">⬛</div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:16px;">Scan at event entrance to verify guests</div>
+    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:8px;">
+      <div style="text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--gold);">248</div>
+        <div style="font-size:10px;color:var(--text3);">Registered</div>
+      </div>
+      <div style="width:1px;background:rgba(255,255,255,0.08);"></div>
+      <div style="text-align:center;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--success);">0</div>
+        <div style="font-size:10px;color:var(--text3);">Checked In</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="showToast('QR code downloaded!')">Download QR</button>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="modal-overlay" id="chatModal" onclick="closeModal(event,'chatModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Chat — Sreelakshmi</div>
+    <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:12px;max-height:220px;overflow-y:auto;">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:10px;text-align:center;">Apr 25, 10:30 AM</div>
+      <div class="chat-bubble user" style="max-width:85%;margin-bottom:10px;">Hi Sreelakshmi, we've confirmed Green Petal Florals for your décor!</div>
+      <div class="chat-bubble ai" style="max-width:85%;margin-bottom:10px;">That's wonderful! Could we add more roses near the stage area?</div>
+      <div class="chat-bubble user" style="max-width:85%;">Absolutely, I'll coordinate that with the team.</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <input class="chat-input" type="text" placeholder="Type a message…" style="border-radius:10px;">
+      <button class="chat-send-btn" onclick="showToast('Message sent!')">➤</button>
+    </div>
+    <div style="margin-top:10px;">
+      <div class="wa-btn" onclick="showToast('Opening WhatsApp…')">
+        <span style="font-size:18px;">🟢</span>
+        <div style="font-size:12px;">Open in WhatsApp</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal" onclick="closeModal(event,'profileModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:70px;height:70px;border-radius:50%;background:var(--gold-dim);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--gold);">K</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;">Kriz</div>
+      <div class="role-badge role-admin" style="display:inline-block;margin-top:4px;">Admin · Owner</div>
+    </div>
+    <div class="card card-sm" style="margin:0 0 10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+        <div><div style="color:var(--text3);font-size:10px;">BUSINESS</div><div style="margin-top:2px;">Niran Events</div></div>
+        <div><div style="color:var(--text3);font-size:10px;">LOCATION</div><div style="margin-top:2px;">Trivandrum, Kerala</div></div>
+        <div><div style="color:var(--text3);font-size:10px;">EVENTS YTD</div><div style="margin-top:2px;color:var(--gold);">48</div></div>
+        <div><div style="color:var(--text3);font-size:10px;">REVENUE YTD</div><div style="margin-top:2px;color:var(--gold);">₹28L</div></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn-outline" style="width:100%;">Account Settings</button>
+      <button class="btn-outline" style="width:100%;color:var(--text3);">Privacy & Security</button>
+      <button class="btn-outline" style="width:100%;color:var(--danger);border-color:rgba(224,82,82,0.3);" onclick="showToast('Logged out')">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP MODAL -->
+<div class="modal-overlay" id="waModal" onclick="closeModal(event,'waModal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">WhatsApp Message</div>
+    <div class="form-group">
+      <label class="form-label">Select Client</label>
+      <select class="form-input">
+        <option>Sreelakshmi Menon</option>
+        <option>Rajan Thomas</option>
+        <option>Arya Krishnan</option>
+        <option>Priya Nair</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Template</label>
+      <select class="form-input" onchange="updateWATemplate(this)">
+        <option value="payment">Payment Reminder</option>
+        <option value="event">Event Update</option>
+        <option value="confirm">Booking Confirmation</option>
+        <option value="custom">Custom Message</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Message</label>
+      <textarea class="form-input" id="waMessage" rows="4" style="resize:none;">Dear Sreelakshmi, this is a reminder that your payment of ₹70,000 is due by May 1st. Kindly arrange the same. Thank you — Niran Events</textarea>
+    </div>
+    <button class="btn-primary" onclick="showToast('Message sent via WhatsApp!')">Send via WhatsApp 🟢</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:calc(var(--tab-h)+20px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--gold-border);color:var(--text);padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;transition:all 0.3s;z-index:999;white-space:nowrap;pointer-events:none;max-width:calc(430px - 40px);text-align:center;"></div>
+
+<script>
+  // SPLASH
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('splash').classList.add('hide');
+    }, 1400);
+  });
+
+  // NAVIGATION
+  function switchTab(tab) {
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(s => {
+      s.classList.remove('active');
+      s.style.display = 'none';
+    });
+    // Remove active nav
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+    // Show target
+    const screen = document.getElementById('screen-' + tab);
+    if (screen) {
+      screen.style.display = 'block';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => screen.classList.add('active'));
+      });
+    }
+    const navTab = document.getElementById('tab-' + tab);
+    if (navTab) navTab.classList.add('active');
+
+    // FAB context
+    const fab = document.getElementById('fabBtn');
+    fab.style.display = (tab === 'budget' || tab === 'more') ? 'none' : 'flex';
+  }
+
+  // Set initial display
+  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+  document.getElementById('screen-dashboard').style.display = 'block';
+  document.getElementById('screen-dashboard').classList.add('active');
+
+  function fabAction() {
+    const active = document.querySelector('.nav-tab.active');
+    if (!active) return;
+    const id = active.id;
+    if (id === 'tab-dashboard' || id === 'tab-events') openModal('eventDetailModal');
+    else if (id === 'tab-clients') openModal('addClientModal');
+    else if (id === 'tab-tasks') openModal('addTaskModal');
+  }
+
+  // MODALS
+  function openModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+      m.style.display = 'flex';
+      requestAnimationFrame(() => m.classList.add('open'));
+    }
+  }
+  function closeModal(e, id) {
+    if (e.target === document.getElementById(id)) {
+      const m = document.getElementById(id);
+      m.classList.remove('open');
+      setTimeout(() => m.style.display = 'none', 300);
+    }
+  }
+
+  // TASK TOGGLE
+  function toggleTask(el) {
+    el.classList.toggle('done');
+    const name = el.nextElementSibling.querySelector('.task-name');
+    if (name) name.classList.toggle('done');
+    if (el.classList.contains('done')) showToast('Task completed! ✓');
+  }
+
+  // MORE TABS
+  function showMoreTab(pill, tabId) {
+    document.querySelectorAll('.pill-tabs .pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    ['vendors','gallery','booking','ai','analytics'].forEach(id => {
+      const el = document.getElementById('more-' + id);
+      if (el) el.style.display = (id === tabId) ? 'block' : 'none';
+    });
+  }
+
+  // TOAST
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2500);
+  }
+
+  // WA TEMPLATE
+  const waTemplates = {
+    payment: 'Dear [Name], this is a reminder that your payment of ₹70,000 is due by May 1st. Kindly arrange the same. Thank you — Niran Events',
+    event: 'Dear [Name], your event is scheduled for Apr 28 at Le Méridien, 4 PM. Please review the attached timeline. — Niran Events',
+    confirm: 'Dear [Name], your booking with Niran Events has been confirmed! We look forward to creating a beautiful experience for you.',
+    custom: ''
+  };
+  function updateWATemplate(sel) {
+    document.getElementById('waMessage').value = waTemplates[sel.value] || '';
+  }
+
+  // AI CHAT
+  async function sendAIMessage() {
+    const input = document.getElementById('aiInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+
+    const wrap = document.querySelector('#more-ai .chat-wrap');
+    
+    // User bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble user';
+    userBubble.textContent = msg;
+    wrap.appendChild(userBubble);
+
+    // AI bubble placeholder
+    const aiBubble = document.createElement('div');
+    aiBubble.className = 'chat-bubble ai';
+    aiBubble.textContent = '✦ Thinking…';
+    wrap.appendChild(aiBubble);
+    wrap.scrollIntoView({behavior:'smooth', block:'end'});
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: 'You are the AI assistant for Niran Events, a premium event management company in Kerala, India. You help with event planning, vendor suggestions, budget breakdowns, theme ideas, client management, and operational tips. Keep responses concise and practical. Use emojis sparingly. Format suggestions clearly.',
+          messages: [{ role: 'user', content: msg }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || 'Sorry, I could not get a response. Please try again.';
+      aiBubble.innerHTML = text.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+    } catch (err) {
+      aiBubble.textContent = '⚠️ Unable to connect. Check your network and try again.';
+    }
+    wrap.scrollIntoView({behavior:'smooth', block:'end'});
+  }
+
+  document.getElementById('aiInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendAIMessage();
+  });
+
+  // Close modals on ESC
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => {
+        m.classList.remove('open');
+        setTimeout(() => m.style.display = 'none', 300);
+      });
+    }
+  });
+</script>
+</body>
+</html>
